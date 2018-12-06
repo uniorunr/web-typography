@@ -1,0 +1,281 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Web Typography - Presentation</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/white.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Web Typography</h1>
+					<p>
+						<small>presentation by <a href="https://github.com/uniorunr" target="_blank">uniorunr</a></small>
+					</p>
+					<aside class="notes">
+						Using the @font-face rule, you can host fonts on your own server. Here is the basic CSS syntax:
+
+First, the font-family property declares the name of the typeface. Next, the font-style specifies the style (normal or italic) and the font-weight defines the boldness (100–900) of your fonts.
+
+Unless you're referencing one of the default system fonts, it is rare for the user to have it locally installed, especially on mobile devices, where it is effectively impossible to "install" additional fonts. You should always start with a local() entry "just in case," and then provide a list of url() entries.
+
+					</aside>
+				</section>
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+							<aside class="notes">
+								Using the @font-face rule, you can host fonts on your own server. Here is the basic CSS syntax:
+								First, the font-family property declares the name of the typeface. 
+								Next, the font-style specifies the style (normal or italic) 
+								and the font-weight defines the boldness (100–900) of your fonts.
+								
+								It is rare for the user to have custom fonts locally installed, especially on mobile devices. 
+								You should always start with a local() entry "just in case," and then provide a list of url() entries.
+							</aside>
+							## Defining a font family
+		
+							The @font-face CSS at-rule allows you to define the location of a particular font resource and its style characteristics.
+		
+							```
+							@font-face {
+								font-family: 'Awesome Font';
+								font-style: normal;
+								font-weight: 400;
+								src: local('Awesome Font'),
+										 url('/fonts/awesome.woff2') format('woff2'), 
+										 url('/fonts/awesome.woff') format('woff'),
+										 url('/fonts/awesome.ttf') format('truetype'),
+										 url('/fonts/awesome.eot') format('embedded-opentype');
+							}
+							```
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							<aside class="notes">
+								One of the advantages of using web font services like Google Fonts and Typekit is that they take care of all the work behind the scenes. 
+								You don’t need to worry about font optimization, browser compatibility, reliable performance, and licensing agreements.
+
+								@import
+								The largest problem is that it causes files to load sequentially (one has to wait for the other). 
+								This wastes times and makes your web page load slower.
+							</aside>
+							## Web Font Services
+			
+							Google Fonts:
+							```
+							<link href="https://fonts.googleapis.com/css?family=Noto+Sans+SC" rel="stylesheet">
+							```
+							Typekit:
+							```
+							<link rel="stylesheet" href="https://use.typekit.net/xxxxxxx.css">
+							```
+							@import in CSS
+							```
+							@import url('https://fonts.googleapis.com/css?family=Noto+Sans+SC');
+							```
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							<aside class="notes">
+								Web Font Loader to deliver fonts asynchronously—the JavaScript method of scheduling actions to load only what needed at the moment. 
+								Users may see FOUT (flash of unstyled text) the first time they visit the site, but their experience won’t be interrupted once the font assets are downloaded and cached. 
+								The code in between the script tags executes asynchronously to avoid blocking the rendering of the page. 
+								The link element wrapped inside the noscript tags is included to ensure that custom fonts will still be available if JavaScript is turned off or fails to load.
+							</aside>
+							## Web Font Loader
+							Script Part:
+							```
+							WebFontConfig = {
+								google: { families: [ 'Spectral:400,400italic:latin' ] }
+							};
+					
+							(function(d) {
+								var wf = d.createElement('script'), s = d.scripts[0];
+								wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js';
+								wf.async = true;
+								s.parentNode.insertBefore(wf, s);
+							})(document);							
+							```
+							No-Script Part:
+							```
+							<link href='http://fonts.googleapis.com/css?family=Spectral:400,400italic' rel='stylesheet' type='text/css'>
+							```
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							<aside class="notes">
+								Font Face Observer, a fairly new delivery mechanism uses JavaScript’s scroll events to load and monitor web fonts. 
+								In the code above, we begin with setting a cookie to check if the custom fonts have loaded before. 
+								With subsequent visits after the initial loading, the fonts are cached in the browser; therefore, you want to add the fonts-loaded class upfront using SSI (server side includes)
+								After that, you declare the system fallback fonts for the body and the fonts-loaded to swap out once the custom fonts are loaded:
+							</aside>
+							## Font Face Observer
+							```
+							<!--#if expr="$HTTP_COOKIE=/fonts\-loaded\=true/" -->
+							<html lang="en" class="fonts-loaded">
+							<!--#else -->
+							<html lang="en">
+							<!--#endif -->
+							```
+							```
+							body {font-family: serif;}
+							.fonts-loaded body {font-family: Spectral, serif;}
+							```
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							<aside class="notes">
+								Then near the end of the page (before the </body> tag), we call the Font Face Observer:
+								the following function uses the check() method to see when the fonts are finished loading 
+								and uses the then() method to add the fonts-loaded class into your HTML:
+							</aside>
+							## Font Face Observer
+							```
+							(function( w ){
+								if( w.document.documentElement.className.indexOf( "fonts-loaded" ) > -1 ){
+										return;
+								}
+								var font1 = new w.FontFaceObserver( "Spectral", {
+										weight: 400
+								});
+								var font2 = new w.FontFaceObserver( "Spectral", {
+										weight: 400,
+										style: "italic"
+								});
+								w.Promise
+										.all([font1.check(), font2.check()])
+										.then(function(){
+												w.document.documentElement.className += " fonts-loaded";
+										});
+							}( this ));
+							```
+						</script>
+					</section>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						<aside class="notes">
+							The viewport '<meta>' tag is crucial for responsive typography. 
+							To make sure your text is readable on a small screen without zooming, you need to target the device size rather than the viewport size: width=device-width, initial-scale=1.
+							IE10, in “snap” mode, has dropped support for the viewport meta tag in favor of the @viewport rule.
+						</aside>
+						## Viewport meta tag
+						The viewport ```<meta>``` tag is crucial for responsive typography
+						```
+						<meta name="viewport" content="width=device-width, initial-scale=1">
+						```
+						The Viewport CSS rule for IE10
+						```
+						@-ms-viewport { width: device-width; } @viewport { width: device-width; }
+						```
+					</script>
+				</section>
+				<section>
+					<section>
+						<h2>Some Rules for better readability</h2>
+						<img alt="Too small text" src="./img/toosmall.jpg" data-lazy-loaded="">
+					</section>
+					<section>
+						<aside class="notes">
+							Apertures are the opening gaps found in certain letters such as c, e, and s. 
+							Open apertures aid readers to decipher the letters. 
+							In contrast, closed apertures negatively affect legibility. 
+							For example, in geometric typefaces like Arial and Helvetica, the tiny gap in c can be mistaken for o at smaller sizes.
+						</aside>
+						<h2>Open Apertures</h2>
+						<p>Apertures are the opening gaps found in certain letters such as c, e, a</p>
+						<img alt="Open Apertures" src="./img/open-apertures.png" data-lazy-loaded="">
+					</section>
+					<section>
+						<aside class="notes">
+							Well-designed typefaces for the web should have even letter-spacing to establish a steady rhythm for reading. 
+							Even spacing speeds up the reading process. 
+							Readers can pick out the shapes quicker if the spacing is well balanced.
+						</aside>
+						<h2>Even Spacing</h2>
+						<p>The space around the letters are as important as the space within them.</p>
+						<img alt="Even Spacing" src="./img/spacing.png" data-lazy-loaded="">
+					</section>
+					<section>
+						<aside class="notes">
+							Terminals come in three forms: ball (circular), beak (spur), and teardrop (globular). 
+							In long-form text, letters with clear terminals (distinguishable shapes of ball, beak, or teardrop) are easier to spot; 
+							therefore, they are more readable than letters with lacking terminals.
+						</aside>
+						<h2>Clear Terminals</h2>
+						<p>Letters with clear terminals are more readable than letters with lacking terminals.</p>
+						<img alt="Clear Terminals" src="./img/terminals.png" data-lazy-loaded="">
+					</section>
+					<section>
+						<aside class="notes">
+								Contrast refers to the thick and thin strokes of a letter. High-contrast typefaces like Didot and Bodoni work well at larger sizes—posters and fashion advertising—but not for running text. 
+								In these fonts, thin strokes can be lost and thick strokes can be too prominent at a small size. 
+								As a result, the combination of thick and thin strokes interrupts the flow of reading
+						</aside>
+						<h2>Contrast</h2>
+						<p>The combination of thick and thin strokes interrupts the flow of reading.</p>
+						<img alt="Contrast" src="./img/contrast.png" data-lazy-loaded="">
+					</section>
+				</section>
+				<section>
+					<aside class="notes">
+							1. Using more than 3 different fonts makes a website look unstructured and unprofessional. Keep in mind that too many type sizes and styles at once can also wreck any layout.
+							2. Users are more familiar with standard fonts and can thus read them faster. Keep in mind that good typography draws the reader to the content, not to the type itself.
+							3. Make sure that the typeface you choose is legible on smaller screens!
+							4. Don’t use the same or similar colours for text and background. The more visible the text, the faster users are able to scan and read it.
+							5. Line height leading should be about 30% more than the character height for good readability.							
+					</aside>
+					<h2>5 Quick Tips in Conclusion</h2>
+					<p class="fragment fade-up">1. Keep the number of fonts used at a minimum</p>
+					<p class="fragment fade-up">2. Try to use standard fonts</p>
+					<p class="fragment fade-up">3. Choose a typeface that works well in various sizes</p>
+					<p class="fragment fade-up">4. Make sure you have sufficient color contrast</p>
+					<p class="fragment fade-up">5. Don’t Minimize Spacing Between Lines</p>
+				</section>
+				<section>
+					<h2>Thanks for your attention!</h2>
+					<iframe src="https://giphy.com/embed/a9d3bbcM3ImXe" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
