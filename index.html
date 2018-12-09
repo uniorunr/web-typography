@@ -103,22 +103,26 @@ Unless you're referencing one of the default system fonts, it is rare for the us
 								The link element wrapped inside the noscript tags is included to ensure that custom fonts will still be available if JavaScript is turned off or fails to load.
 							</aside>
 							## Web Font Loader
-							Script Part:
 							```
+							// script part
+							<script>
 							WebFontConfig = {
 								google: { families: [ 'Spectral:400,400italic:latin' ] }
 							};
-					
+
 							(function(d) {
 								var wf = d.createElement('script'), s = d.scripts[0];
 								wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js';
 								wf.async = true;
 								s.parentNode.insertBefore(wf, s);
-							})(document);							
+							})(document);		
+							<script>					
 							```
-							No-Script Part:
 							```
-							<link href='http://fonts.googleapis.com/css?family=Spectral:400,400italic' rel='stylesheet' type='text/css'>
+							// no-script part
+							<noscript>
+								<link href='http://fonts.googleapis.com/css?family=Spectral:400,400italic' rel='stylesheet' type='text/css'>
+							</noscript>
 							```
 						</script>
 					</section>
